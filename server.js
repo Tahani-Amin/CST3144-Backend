@@ -3,9 +3,43 @@ var app = express();
 var path = require("path");
 var fs = require("fs");
 
+const MongoClient = require("mongodb").MongoClient;
+const ObjectID = require("mongodb").ObjectID;
+
+let db;
+
+app.use(express.json());
+
+app.set("port", 3000);
+
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+    res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers"
+    );
+    next();
+});
+
+MongoClient.connect(
+    "mongodb+srv://tahani:tahani@cluster0.hfvhr.mongodb.net/",
+    (err, client) => {
+        if (err) {
+            console.error("Failed to connect to MongoDB", err);
+            return;
+        }
+        db = client.db("webstore");
+        console.log("Connected to MongoDB successfully! :)");
+    }
+);
+
+
 app.use(function(req, res, next) {
     console.log("Request IP: "+ req.baseUrl);
     console.log("Request date: "+ new Date());
+    console.log("Request method: "+ req.method);
     next();
 });
 
