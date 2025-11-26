@@ -44,6 +44,18 @@ app.use(function(req, res, next) {
 app.get("/", function(req, res) {
     res.send("Backend server is working");
 });
+app.get("/lessons", (req, res) => {
+    db.collection("lessons")
+        .find({})
+        .toArray((err, lessons) => {
+            if (err) {
+                console.error("Error fetching lessons", err);
+                res.status(500).json({ error: "Database error" });
+                return;
+            }
+            res.json(lessons);
+        });
+});
 
 app.use(function(req, res, next) {
     var filepath = path.join(__dirname, "static", req.url);
