@@ -56,10 +56,9 @@ app.use(function(req, res, next) {
     });
 });
 
-app.use(function(req, res) {
-    res.status(404);
-    res.end("File not found!");
-});
+
+
+
 app.get("/lessons", (req, res) => {
     db.collection("lessons")
         .find({})
@@ -84,8 +83,36 @@ app.put("/lessons/:id", (req, res, next) => {
     );
 });
 
+app.get("/search", (req, res) => {
+    const searchTerm = (req.query.q || "").trim();
+
+    const dbSearch = searchTerm
+        ? {
+            $or: [
+                { subject: { $regex: searchTerm, $options: "i" } },
+                { location: { $regex: searchTerm, $options: "i" } },
+                { desc: { $regex: searchTerm, $options: "i" } }
+
+            ]
+        } : {};
+
+    db.collection("lessons")
+        .find(dbSearch)
+        .toArray((err, lessons) => {
+            if (err) {
+                console.error("Error searching lessons", err);
+                res.status(500).json({ error: "Database error" });
+                return;
+            }
+            res.json(lessons);
+        });
+});
 
 
+app.use(function(req, res) {
+    res.status(404);
+    res.end("File not found!");
+});
 
 app.listen(process.env.PORT || 3000, function() {
     console.log("Server is running on port " + (process.env.PORT || 3000));
