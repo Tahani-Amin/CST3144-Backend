@@ -44,19 +44,6 @@ app.use(function(req, res, next) {
 app.get("/", function(req, res) {
     res.send("Backend server is working");
 });
-app.get("/lessons", (req, res) => {
-    db.collection("lessons")
-        .find({})
-        .toArray((err, lessons) => {
-            if (err) {
-                console.error("Error fetching lessons", err);
-                res.status(500).json({ error: "Database error" });
-                return;
-            }
-            res.json(lessons);
-        });
-});
-
 app.use(function(req, res, next) {
     var filepath = path.join(__dirname, "static", req.url);
     fs.stat(filepath, function(err, fileInfo) {
@@ -73,6 +60,32 @@ app.use(function(req, res) {
     res.status(404);
     res.end("File not found!");
 });
+app.get("/lessons", (req, res) => {
+    db.collection("lessons")
+        .find({})
+        .toArray((err, lessons) => {
+            if (err) {
+                console.error("Error fetching lessons", err);
+                res.status(500).json({ error: "Database error" });
+                return;
+            }
+            res.json(lessons);
+        });
+});
+app.put("/lessons/:id", (req, res, next) => {
+    db.collection("lessons").update(
+        { id: parseInt(req.params.id) },   
+        { $set: req.body },                
+        { safe: true, multi: false },
+        (e, result) => {
+            if (e) return next(e);
+            res.send((result.result.n === 1) ? { msg: "success" } : { msg: "error" });
+        }
+    );
+});
+
+
+
 
 app.listen(process.env.PORT || 3000, function() {
     console.log("Server is running on port " + (process.env.PORT || 3000));
