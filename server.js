@@ -108,6 +108,40 @@ app.get("/search", (req, res) => {
         });
 });
 
+app.post("/orders", (req, res) => {
+    const body = req.body || {};
+
+    const order = {
+        name: body.name,
+        phone: body.phone,
+        email: body.email,
+
+        lessonIds: body.lessonIds || [],   // simple list
+        lessons: body.lessons || [],       // detailed list
+
+        totalSpaces: body.totalSpaces || 0,
+        orderDate: body.orderDate || new Date().toISOString()
+    };
+
+    db.collection("orders").insertOne(order, (err, result) => {
+        if (err) {
+            console.error("Error inserting order", err);
+            res.status(500).json({ error: "Database error" });
+            return;
+        }
+        res.status(201).json(result.ops ? result.ops[0] : order);
+    });
+});
+
+
+app.use((req, res, next) => {
+    if (req.method === "OPTIONS") {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
+
 
 app.use(function(req, res) {
     res.status(404);
