@@ -29,11 +29,11 @@ app.use((req, res, next) => {
 
 // Middleware to log request details
 app.use(function(req, res, next) {
-    console.log("Request IP: " + req.baseUrl);
+    console.log(req.method + " " + req.url);
     console.log("Request date: " + new Date());
-    console.log("Request method: " + req.method);
     next();
 });
+
 
 // Static file server middleware
 app.use(function(req, res, next) {
