@@ -94,16 +94,9 @@ app.get("/search", (req, res) => {
     const searchTerm = (req.query.q || "").trim();
     console.log(" GET /search – searchTerm:", `"${searchTerm}"`);
 
-    const dbSearch = searchTerm ? {
-
-            $or: [
-                { subject:  { $regex: searchTerm, $options: "i" } },
-                { location: { $regex: searchTerm, $options: "i" } },
-                { desc:     { $regex: searchTerm, $options: "i" } }
-            ]
-        } : {};
-
-    db.collection("lessons").find(dbSearch).toArray((err, lessons) => {
+    // If the seach term is empty then return all lessons
+    if (!searchTerm) {
+        db.collection("lessons").find({}).toArray((err, lessons) => {
             if (err) {
                 console.error("Error searching lessons", err);
                 res.status(500).json({ error: "Database error" });
@@ -111,7 +104,36 @@ app.get("/search", (req, res) => {
             }
             res.json(lessons);
         });
+        return;
+    }
+
+    // Number search for price and spaces
+    const numberTerm = Number(searchTerm);
+    const isNumber = !isNaN(numberTerm);
+
+    // Building the search query
+    const dbSearch = {
+        $or: [
+            { subject:  { $regex: searchTerm, $options: "i" } },
+            { location: { $regex: searchTerm, $options: "i" } },
+            { desc:     { $regex: searchTerm, $options: "i" } },
+
+            ...(isNumber ? [
+                { price:  numberTerm },
+                { spaces: numberTerm } ] : [])
+        ]
+    };
+
+    db.collection("lessons").find(dbSearch).toArray((err, lessons) => {
+        if (err) {
+            console.error("Error searching lessons", err);
+            res.status(500).json({ error: "Database error" });
+            return;
+        }
+        res.json(lessons);
+    });
 });
+
 
 // Create new order
 app.post("/orders", (req, res) => {
