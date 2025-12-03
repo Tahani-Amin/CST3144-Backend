@@ -60,6 +60,8 @@ app.use(function(req, res, next) {
 
 
 app.get("/lessons", (req, res) => {
+    
+    console.log(" GET /lessons – fetching ALL lessons");
     db.collection("lessons")
         .find({})
         .toArray((err, lessons) => {
@@ -85,6 +87,7 @@ app.put("/lessons/:id", (req, res, next) => {
 
 app.get("/search", (req, res) => {
     const searchTerm = (req.query.q || "").trim();
+    console.log(" GET /search – searchTerm:", `"${searchTerm}"`);
 
     const dbSearch = searchTerm
         ? {
@@ -110,6 +113,7 @@ app.get("/search", (req, res) => {
 
 app.post("/orders", (req, res) => {
     const body = req.body || {};
+    console.log("POST /orders – new order received!");
 
     const order = {
         name: body.name,
